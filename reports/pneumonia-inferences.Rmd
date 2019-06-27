@@ -1,9 +1,20 @@
 ---
 title: "Detection of Pneumonia from Chest X-Ray Images"
-output: html_notebook
+author: "Antonio Esteves"
+output:
+  html_document:
+    theme: readable
+    df_print: paged
+    toc: yes
+  html_notebook:
+    fig_width: 7
+    theme: readable
+    toc: yes
+    toc_float: yes
 ---
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 theme_set(theme_bw())
 
@@ -15,10 +26,14 @@ knitr::opts_chunk$set(tidy = FALSE,
 
 ```
 
+## Leitura dos Dados
+
 ```{r read}
 dados = read_csv("../data/rocObj.csv")
 glimpse(dados)
 ```
+
+## Curva ROC e AUC
 
 ```{r}
 par(pty = "s")
@@ -26,84 +41,57 @@ rocObj <- roc(dados$y_true, dados$y_pred, plot=TRUE, legacy.axes=TRUE, percent =
 ```
 
 
+## Intervalos de Confiança
+
 ```{r}
-ci.auc(rocObj, conf.level=0.95, method=c("delong",
-"bootstrap"), boot.n = 10000, boot.stratified = TRUE, reuse.auc=TRUE,
+ci.auc(rocObj, conf.level=0.95, method="bootstrap", boot.n = 10000, boot.stratified = TRUE, reuse.auc=TRUE,
 progress = getOption("pROCProgress")$name, parallel=FALSE)
 ```
 
-## ICs
-
-```{r}
-theta_diferenca_fds = function(d, i){
-    sonos = d %>% 
-        slice(i) %>% 
-        group_by(turma) %>% 
-        summarise(sono = mean(sono_fds)) 
-    
-    cdd = sonos %>% filter(turma == "cdd") %>% pull(sono)
-    fpcc = sonos %>% filter(turma == "fpcc") %>% pull(sono)
-    
-    cdd - fpcc
-}
-
-
-theta_c_fds = theta_diferenca_fds(dados, 1:NROW(dados))
-
-theta_c_fds
-```
-
-```{r}
-library(boot)
-dados %>% 
-    boot(statistic = theta_diferenca_fds, R = 4000) %>% 
-    tidy(conf.level = 0.95, 
-         conf.int = TRUE)
-```
 
 ## Com teste de hipótese
 
 ```{r}
-theta_embaralhado = function(d){
-    sonos = d %>% 
-        mutate(turma_embaralhada = sample(turma, n())) %>% 
-        group_by(turma_embaralhada) %>% 
-        summarise(sono = mean(sono_fds)) 
-    
-    cdd = sonos %>% filter(turma_embaralhada == "cdd") %>% pull(sono)
-    fpcc = sonos %>% filter(turma_embaralhada == "fpcc") %>% pull(sono)
-    
-    cdd - fpcc
-}
-
-theta_embaralhado(dados)
+# theta_embaralhado = function(d){
+#     sonos = d %>% 
+#         mutate(turma_embaralhada = sample(turma, n())) %>% 
+#         group_by(turma_embaralhada) %>% 
+#         summarise(sono = mean(sono_fds)) 
+#     
+#     cdd = sonos %>% filter(turma_embaralhada == "cdd") %>% pull(sono)
+#     fpcc = sonos %>% filter(turma_embaralhada == "fpcc") %>% pull(sono)
+#     
+#     cdd - fpcc
+# }
+# 
+# theta_embaralhado(dados)
 ```
 
 ```{r}
-diffs1 = replicate(5000, {theta_embaralhado(dados)})
-
-tibble(diferenca = diffs1) %>% 
-  ggplot(aes(x = diferenca)) + 
-  # geom_histogram(binwidth = .2, fill = "white", color = "darkgreen") + 
-    geom_density(fill = "white", color = "darkgreen") + 
-  geom_vline(xintercept = theta_diferenca_fds(dados, 1:NROW(dados)), 
-             color = "orange") + 
-    geom_vline(xintercept = - theta_diferenca_fds(dados, 1:NROW(dados)), 
-             color = "orange") + 
-    geom_rug()
+# diffs1 = replicate(5000, {theta_embaralhado(dados)})
+# 
+# tibble(diferenca = diffs1) %>% 
+#   ggplot(aes(x = diferenca)) + 
+#   # geom_histogram(binwidth = .2, fill = "white", color = "darkgreen") + 
+#     geom_density(fill = "white", color = "darkgreen") + 
+#   geom_vline(xintercept = theta_diferenca_fds(dados, 1:NROW(dados)), 
+#              color = "orange") + 
+#     geom_vline(xintercept = - theta_diferenca_fds(dados, 1:NROW(dados)), 
+#              color = "orange") + 
+#     geom_rug()
 ```
 
 ```{r}
-mean(abs(diffs1) >= abs(theta_diferenca_fds(dados, 1:NROW(dados))))
+# mean(abs(diffs1) >= abs(theta_diferenca_fds(dados, 1:NROW(dados))))
 ```
 
 ## Salvando Imagens como PDF
 
 ```{r}
-estimativas %>%
-    filter(!is.na(HoursEstimate), !is.na(HoursActual)) %>%
-    ggplot(aes(x = HoursEstimate, y = HoursActual)) +
-    geom_point(colour = "brown", size = 1, alpha=.4) 
-    ggsave("exemplo-figura2-1.pdf", width = 6, height = 4)
+# estimativas %>%
+#     filter(!is.na(HoursEstimate), !is.na(HoursActual)) %>%
+#     ggplot(aes(x = HoursEstimate, y = HoursActual)) +
+#     geom_point(colour = "brown", size = 1, alpha=.4) 
+#     ggsave("exemplo-figura2-1.pdf", width = 6, height = 4)
 ```
 

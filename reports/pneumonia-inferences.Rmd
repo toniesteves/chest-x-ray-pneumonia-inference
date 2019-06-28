@@ -39,12 +39,12 @@ glimpse(dados)
 ```{r}
 par(pty = "s")
 rocObj = dados %>% 
-  roc(y_true,y_pred, plot=TRUE, legacy.axes=TRUE, percent = TRUE, xlab = "False Positive Percentage", ylab= "True Positive Percentage", col="#377eb8", lwd=4, partial.auc=c(100,82), auc.polygon=TRUE, auc.polygon.col="#377eb822")
+  roc(y_true,y_pred, plot=TRUE, legacy.axes=TRUE, percent = TRUE, xlab = "False Positive Percentage", ylab= "True Positive Percentage", col="#377eb8", lwd=4, print.auc=TRUE, partial.auc=c(100,82), auc.polygon=TRUE, auc.polygon.col="#377eb822")
 ggsave("ROC_curve_partial.pdf", width = 6, height = 4)
 
 par(pty = "s")
 rocObj = dados %>% 
-  roc(y_true,y_pred, plot=TRUE, legacy.axes=TRUE, percent = TRUE, xlab = "False Positive Percentage", ylab= "True Positive Percentage", col="#377eb8", lwd=4)
+  roc(y_true,y_pred, plot=TRUE, legacy.axes=TRUE, percent = TRUE, xlab = "False Positive Percentage", ylab= "True Positive Percentage", col="#377eb8", lwd=4, print.auc=TRUE)
 ggsave("ROC_curve.pdf", width = 6, height = 4)
 ```
 

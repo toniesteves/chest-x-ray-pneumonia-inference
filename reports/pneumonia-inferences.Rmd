@@ -1,10 +1,10 @@
 ---
-title: "Detection of Pneumonia from Chest X-Ray Images"
+title: "Inference in Pneumonia Detection from Chest X-Ray Images"
 author: "Antonio Esteves"
 output:
-  html_document:
+  html_document: 
+    keep_md: yes
     theme: readable
-    df_print: paged
     toc: yes
   html_notebook:
     fig_width: 7
@@ -27,7 +27,11 @@ knitr::opts_chunk$set(tidy = FALSE,
 
 ```
 
-## Leitura dos Dados
+## Summary
+
+The proposed study for replication was prepared by [Kermany et al. 2018] and implements algorithms to support clinical decision making, establishing a diagnostic tool based on a deep-learning framework for screening patients with treatable blinding retinal diseases, as well as the diagnosis of pneumonia pedia ́trica viral and bacterial. We then chose to replicate only the experiment that seeks to identify the existence or not of pneumonia, due to the technical limitations in the labeling of images of retinal diseases as well as the existence of another previously labeled data set. for the execution of this study.
+
+## Data Summary
 
 ```{r read}
 dados = read_csv("../data/rocObj.csv")
@@ -36,75 +40,93 @@ glimpse(dados)
 
 ## Curva ROC e AUC
 
+The main idea in this experiment is that we will use is a technique proposed by [Efron 1979], called boostrap, which uses replication and uses the sample as a substitute for the population and simulates sampling through a resampling process with repositioning. , Providing an accurate estimate of the variation in the sample distribution.
+
+So assuming that our data set, which has a total of 5,232 images tagged and labeled, is our sample and as already presented, an AUC of 89.06%, we will calculate the sample distribution in relation to to this metric, bypassing the lack of information on the population from this resampling technique.
+
+
 ```{r}
 par(pty = "s")
-rocObj = dados %>% 
-  roc(y_true,y_pred, plot=TRUE, legacy.axes=TRUE, percent = TRUE, xlab = "False Positive Percentage", ylab= "True Positive Percentage", col="#377eb8", lwd=4, print.auc=TRUE, partial.auc=c(100,82), auc.polygon=TRUE, auc.polygon.col="#377eb822")
-ggsave("ROC_curve_partial.pdf", width = 6, height = 4)
+rocObj = dados %>%
+  roc(y_true,y_pred, plot=TRUE, legacy.axes=TRUE, percent = TRUE, xlab = "False Positive Percentage", ylab= "True Positive Percentage", col="#377eb8", lwd=4, print.auc=TRUE, partial.auc=c(100,82), auc.polygon=TRUE, auc.polygon.col="#377eb822") +
+  theme_minimal() +
+  ggsave("1.pdf", width = 6, height = 4)
 
 par(pty = "s")
-rocObj = dados %>% 
+rocObj = dados %>%
   roc(y_true,y_pred, plot=TRUE, legacy.axes=TRUE, percent = TRUE, xlab = "False Positive Percentage", ylab= "True Positive Percentage", col="#377eb8", lwd=4, print.auc=TRUE)
 ggsave("ROC_curve.pdf", width = 6, height = 4)
 ```
 
 ```{r}
-obj = dados %>% 
+obj = dados %>%
   roc(y_true, y_pred, ci=TRUE, plot=FALSE)
-# obj["ci"]
+obj["ci"]
 
-ciobj = ci.se(obj, specificities=seq(0, 1, l=25), boot.n=10000)
-dat.ci <- data.frame(x = as.numeric(rownames(ciobj)),
-                     lower = ciobj[, 1],
-                     upper = ciobj[, 3])
+sens_obj = ci.se(obj, specificities=seq(0, 1, l=25), boot.n=10000)
+dat_sens.ci = data.frame(x = as.numeric(rownames(sens_obj)),
+                     lower = sens_obj[, 1],
+                     upper = sens_obj[, 3])
 
-ggroc(obj) + 
-  theme_minimal() + 
-  geom_abline(slope=1, intercept = 1, linetype = "dashed", alpha=0.7, color = "grey") + 
-  coord_equal() + 
-  geom_ribbon(data = dat.ci, aes(x = x, ymin = lower, ymax = upper), fill = "steelblue", alpha= 0.2) + 
-  ggtitle(capture.output(obj$ci))
+ggroc(obj) +
+  xlab("Especificidade") + 
+  ylab("Sensibilidade") +
+  theme_minimal() +
+  geom_abline(slope=1, intercept = 1, linetype = "dashed", alpha=0.7, color = "grey") +
+  coord_equal() +
+  geom_ribbon(data = dat_sens.ci, aes(x = x, ymin = lower, ymax = upper), fill = "steelblue", alpha= 0.2) +
+  # ggtitle(capture.output(obj$ci))
+  ggtitle("Curva ROC - 95% IC:[0,86; 0,91]")
   ggsave("ICS_ROC_curve.pdf", width = 6, height = 4)
 ```
 
-## Intervalos de Confiança
+To carry out this procedure, we built 10,000 bootstrap replicas, in order to obtain limits for 95% confidence intervals as well as the standard error. 
+
+## Get Confidence Intervals
 
 ```{r}
 ci.auc(rocObj, conf.level=0.95, method="bootstrap", boot.n = 10000, boot.stratified = TRUE, reuse.auc=TRUE,
 progress = getOption("pROCProgress")$name, parallel=FALSE)
 ```
 
-```{r}
-# Utilizando a biblioteca fbroc
+## Another lib (fbroc)
 
-new_data = dados %>% 
+```{r}
+new_data = dados %>%
   mutate(true_class = as.logical(y_true))
 
 result.boot = boot.roc(new_data$y_pred, new_data$true_class, n.boot = 10000)
 perf(result.boot, "auc", conf.level = 0.95)
-conf(result.boot, steps = 10000)
-# plot(result.boot)
 ```
 
-## Com teste de hipótese
+## Bootstraped Samples
 
 ```{r}
-# https://stats.stackexchange.com/questions/75050/in-r-how-to-compute-the-p-value-for-area-under-roc
-
-
+conf(result.boot, steps = 10000)
 ```
+## Results
 
+The model was evaluated by a set of validation metrics, achieving expressive results. For the accuracy of the model, the replication activity achieved results around 90.71% with a loss rate of 0.25%, which we believe to be a satisfactory percentage. On the other hand, the AUC of replication in the country did not reach such an expressive result when compared to the original study, being around 89.06% against 96.8% of the original study, which for a diagnostic tool can be considered not so efficient in general.
+
+Finally we come to the conclusion that with 95% confidence, it is possible to affirm on these data that our sample distribution of the area under the curve is between 0.86 and 0.91 and a standard error of 0.013 , that is, in 95% of cases our trained model achieves a satisfactory classification accuracy with a variation that is between 86.4% to 91.7%.
 
 ```{r}
 # https://cran.r-project.org/web/packages/scifigure/vignettes/Visualizing_Scientific_Replication.html
 
 library(scifigure)
+
 exps = init_experiments(2, c("Kermany et al. 2018", "Reprodução"))
 exps["analysis_plan", 2] = "unobserved"
 exps["analysis_plan", 2] = "unobserved"
-exps[c("experimenter", "analyst", "estimate", "claim"), 2] = "different"
+exps[c("experimenter","experimental_design", "analyst", "analysis_plan", "estimate", "claim"), 2] = "different"
 sci_figure(exps, hide_stages = c("population", "hypothesis"), diff = TRUE)
-ggsave("sci_figure.pdf", width = 6, height = 4)
-
 ```
+
+## Save Figures
+```{r}
+# Save Figure
+# ggsave("sci_figure.pdf", plot = last_plot(), width = 6, height = 4)
+# ggplot(exps)
+```
+
 

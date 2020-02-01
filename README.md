@@ -2,3 +2,5 @@ The proposed study for replication was prepared by [Kermany et al. 2018] and imp
 
 Main study can be found here:  [Identifying Medical Diagnoses and Treatable Diseases by Image-Based Deep Learning](https://github.com/toniesteves/pneumonia-detection-from-chest-x-ray-images-with-deep-learning)
 
+Results: [Report Analysis of confidence intervals]https://rpubs.com/toniesteves/chest-x-ray-pneumonia-inference
+

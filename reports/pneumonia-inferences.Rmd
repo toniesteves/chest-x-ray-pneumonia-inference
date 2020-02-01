@@ -28,7 +28,7 @@ knitr::opts_chunk$set(tidy = FALSE,
 
 ## Summary
 
-The proposed study for replication was prepared by [Kermany et al. 2018] and implements algorithms to support clinical decision making, establishing a diagnostic tool based on a deep-learning framework for screening patients with treatable blinding retinal diseases, as well as the diagnosis of pneumonia pedia ́trica viral and bacterial. We then chose to replicate only the experiment that seeks to identify the existence or not of pneumonia, due to the technical limitations in the labeling of images of retinal diseases as well as the existence of another previously labeled data set. for the execution of this study.
+The proposed study was done by [Kermany et al. 2018] and implements algorithms to support clinical decision making, establishing a diagnostic tool based on a deep-learning framework for screening patients with treatable blinding retinal diseases, as well as the diagnosis of pneumonia pediátrica viral and bacterial. We then chose to replicate only the experiment that seeks to identify the existence or not of pneumonia, due to the technical limitations in the labeling of images of retinal diseases as well as the existence of another previously labeled data set. for the execution of this study besides that, our contribution are the confidence intervals calculations and other inferences.
 
 ## Data Summary
 

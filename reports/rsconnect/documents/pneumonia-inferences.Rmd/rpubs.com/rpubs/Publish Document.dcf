@@ -1,0 +1,10 @@
+name: Publish Document
+title:
+username:
+account: rpubs
+server: rpubs.com
+hostUrl: rpubs.com
+appId: https://api.rpubs.com/api/v1/document/570714/9d823a7b9d804151bfd2744a889da826
+bundleId: https://api.rpubs.com/api/v1/document/570714/9d823a7b9d804151bfd2744a889da826
+url: http://rpubs.com/toniesteves/570714
+when: 1580532757.73551
